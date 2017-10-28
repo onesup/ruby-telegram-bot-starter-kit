@@ -20,6 +20,18 @@ class MessageResponder
     on /^\/stop/ do
       answer_with_farewell_message
     end
+
+
+    file_id = @message.document.file_id
+
+    get_file = bot.api.get_file(file_id: file_id)
+    new_file = Faraday.new(url: 'https://api.telegram.org') do |faraday|
+      faraday.request :url_encoded
+      faraday.adapter Telegram::Bot.configuration.adapter
+    end.get("file/bot#{bot.api.token}/#{get_file["result"]["file_path"]}")
+    File.open(get_file["result"]["file_path"], 'w') do |f|
+      f.write(new_file.body)
+    end
   end
 
   private
